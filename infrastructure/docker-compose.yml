@@ -1,0 +1,42 @@
+version: "2"
+
+services:
+    nginx:
+        build:
+            context: .
+            dockerfile: ./nginx/Dockerfile
+        container_name: nginx
+        working_dir: /application
+        volumes_from:
+            - php_fpm
+        ports:
+            - "80:80"
+    php_fpm:
+        build: php-fpm
+        container_name: php-fpm
+        working_dir: /application
+        volumes:
+            - ~/.composer/docker-cache/:/root/.composer:cached
+            - ../:/application
+        ports:
+            - "3000:3000"
+
+    database:
+        image: mariadb:10.4
+        container_name: database
+        working_dir: /application
+        volumes:
+            - ./mysql/.db:/var/lib/mysql
+        env_file:
+            - ../.env
+        ports:
+            - "3315:3306"
+
+    redis:
+        image: bitnami/redis
+        container_name: redis
+        environment:
+            ALLOW_EMPTY_PASSWORD: 'yes'
+            REDIS_PASSWORD:
+        ports:
+            - "6379:6379"
